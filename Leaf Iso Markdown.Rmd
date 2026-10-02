@@ -1,0 +1,81 @@
+---
+title: "Leaf Iso Markdown"
+author: "Maggie and Kendal"
+date: "2026-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Tutorial stuff
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+#Set-up
+
+Goals: 
+
+summarize all by species and plot
+
+
+My questions:
+what is dC13/dN15? i did a quick google search, but am not sure how/if to use that data.
+
+```{r libararies}
+#general (from photosynthesis project, some might be unusued)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+```
+
+```{r load data}
+data <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202605 - forR(SampleList).csv") |> 
+  head(56) #kept returning 999 blank rows for some reason?
+#i did cheat and manually add a plot column. seemed faster than trying to figure out the r verison
+
+#get mean and sd for each isotope grouped by species and plot
+grouped_data <- data |>
+  group_by(Species, Plot) |>
+  filter(!is.na(Br)) |> 
+  mutate(
+    mean_Br = mean(Br), 
+    mean_Cl = mean(Cl),
+    mean_NO3 = mean(NO3),
+    mean_PO4 = mean(PO4),
+    mean_SO4 = mean(SO4),
+    sd_Br = sd(Br), 
+    sd_Cl = sd(Cl),
+    sd_NO3 = sd(NO3),
+    sd_PO4 = sd(PO4),
+    sd_SO4 = sd(SO4)
+  )
+
+```
+
+```{r summarize ions}
+
+#what i want to do: 
+#group by plot,
+#group by species,
+#get standard deviation and mean for each
+#graph (box and whisker plot?)
+
+
+
+
+
+```
