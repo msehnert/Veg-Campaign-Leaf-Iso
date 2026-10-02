@@ -66,16 +66,32 @@ grouped_data <- data |>
 
 ```
 
-```{r summarize ions}
+```{r summarize ions: box plot}
 
-#what i want to do: 
-#group by plot,
-#group by species,
-#get standard deviation and mean for each
-#graph (box and whisker plot?)
-
+#all appear mostly similar, minus a very wide range for saltwater litu
+ggplot(grouped_data, aes(x = Plot, fill = Species, y = Br)) +
+  geom_boxplot() +
+  theme_bw()
 
 
+#much higher in the saltwater plot, especially LITU! 
+#control and fresh are all similar
+#saltwater has a higher range, litu still is wayyyy higher
+ggplot(grouped_data, aes(x = Plot, fill = Species, y = Cl)) +
+  geom_boxplot() + theme_bw()
 
+#not much difference across plots, it's more species-differences
+#litu tends to be higher, fagr tends to be a but lower
+ggplot(grouped_data, aes(x = Plot, fill = Species, y = NO3)) +
+  geom_boxplot() + theme_bw()
 
+#a bit of variation again, but mostly contained to litu
+#beech runs mostly similar, acru is higher in freshwater and more in saltwater
+#litu is similar control fresh but much higher salt
+ggplot(grouped_data, aes(x = Plot, fill = Species, y = PO4)) +
+  geom_boxplot() + theme_bw()
+
+#nothing of note
+ggplot(grouped_data, aes(x = Plot, fill = Species, y = SO4)) +
+  geom_boxplot() + theme_bw()
 ```
