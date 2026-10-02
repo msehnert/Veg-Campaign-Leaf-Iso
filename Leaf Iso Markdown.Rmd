@@ -40,6 +40,7 @@ library(lubridate)
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
+
 ```
 
 ```{r load data}
@@ -68,17 +69,23 @@ grouped_data <- data |>
 
 ```{r summarize ions: box plot}
 
+#idea: box and whisker plots? (show range, which would be useful to know)
+#can i cluster by plot but show by species? (yes! fill = does this)
+
+
 #all appear mostly similar, minus a very wide range for saltwater litu
 ggplot(grouped_data, aes(x = Plot, fill = Species, y = Br)) +
   geom_boxplot() +
   theme_bw()
 
-
 #much higher in the saltwater plot, especially LITU! 
 #control and fresh are all similar
 #saltwater has a higher range, litu still is wayyyy higher
-ggplot(grouped_data, aes(x = Plot, fill = Species, y = Cl)) +
-  geom_boxplot() + theme_bw()
+cl_box <- ggplot(grouped_data, aes(x = Plot, fill = Species, y = Cl)) +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Vegetation Campaign 2026 Leaf Cl", y = "Cl (mg/kg dw)") 
+cl_box
+ggsave(cl_box, filename = "graphs/Cl box plot (2026-10-02).jpg")
 
 #not much difference across plots, it's more species-differences
 #litu tends to be higher, fagr tends to be a but lower
@@ -94,4 +101,11 @@ ggplot(grouped_data, aes(x = Plot, fill = Species, y = PO4)) +
 #nothing of note
 ggplot(grouped_data, aes(x = Plot, fill = Species, y = SO4)) +
   geom_boxplot() + theme_bw()
+```
+
+```{r table for mean + sd}
+table_data <- read_csv("Data/Veg Campaign Leaf Iso Mean SD(CSV-Friendly).csv")
+
+#i want to bar chart these but it does not work. why?
+
 ```
