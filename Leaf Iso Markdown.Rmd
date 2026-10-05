@@ -9,23 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Tutorial stuff
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-#Set-up
-
 Goals: 
 
 summarize all by species and plot
@@ -33,14 +16,14 @@ summarize all by species and plot
 
 My questions:
 what is dC13/dN15? i did a quick google search, but am not sure how/if to use that data.
+why are bar charts not working
 
 ```{r libararies}
-#general (from photosynthesis project, some might be unusued)
+#general (from photosynthesis project, some might be unused)
 library(lubridate)
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
-
 ```
 
 ```{r load data}
