@@ -10,85 +10,267 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Goals: 
-
 summarize all by species and plot
 
+**CURRENT QUESTIONS: **
+is my % change idea at the bottom helpful at all?
 
-My questions:
-what is dC13/dN15? i did a quick google search, but am not sure how/if to use that data.
-why are bar charts not working
-
-```{r libararies}
+```{r libararies, include = FALSE}
 #general (from photosynthesis project, some might be unused)
 library(lubridate)
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
+library(RColorBrewer)
 ```
 
-```{r load data}
-data <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202605 - forR(SampleList).csv") |> 
+```{r load data, include = FALSE}
+pre_data <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202605 - forR(SampleList).csv") |> 
   head(56) #kept returning 999 blank rows for some reason?
 #i did cheat and manually add a plot column. seemed faster than trying to figure out the r verison
+#alternative version: just delete a bunch of rows in excel
+#mapping spreadsheet: its like a masterlist of metadata on stuff that can be used to do that for you
+
+post_data_partial <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202607_ForR_INCOMPLETE.csv") |> 
+  head(54)
+
 
 #get mean and sd for each isotope grouped by species and plot
-grouped_data <- data |>
+grouped_pre_data <- pre_data |>
   group_by(Species, Plot) |>
   filter(!is.na(Br)) |> 
   mutate(
-    mean_Br = mean(Br), 
-    mean_Cl = mean(Cl),
-    mean_NO3 = mean(NO3),
-    mean_PO4 = mean(PO4),
-    mean_SO4 = mean(SO4),
-    sd_Br = sd(Br), 
-    sd_Cl = sd(Cl),
-    sd_NO3 = sd(NO3),
-    sd_PO4 = sd(PO4),
-    sd_SO4 = sd(SO4)
+    d13C_mean = mean(d13C), 
+    d15N_mean = mean(d15N),
+    Br_mean = mean(Br), 
+    Cl_mean = mean(Cl),
+    NO3_mean = mean(NO3),
+    PO4_mean = mean(PO4),
+    SO4_mean = mean(SO4),
+    Br_sd = sd(Br), 
+    Cl_sd = sd(Cl),
+    NO3_sd = sd(NO3),
+    PO4_sd = sd(PO4),
+    SO4_sd = sd(SO4)
   )
+
+grouped_post_data_partial <- post_data_partial |> 
+  group_by(Species, Plot) |>
+  mutate(
+    d13C_mean = mean(d13C), 
+    d15N_mean = mean(d15N))
+ 
 
 ```
 
-```{r summarize ions: box plot}
+*Pre-Campaign*
+
+```{r summarize ions: box plot, echo=FALSE}
+
+####THIS IS PRE-CAMPAIGN DATA
+
 
 #idea: box and whisker plots? (show range, which would be useful to know)
 #can i cluster by plot but show by species? (yes! fill = does this)
 
+#could be fun to color these fun and not with plots
 
 #all appear mostly similar, minus a very wide range for saltwater litu
-ggplot(grouped_data, aes(x = Plot, fill = Species, y = Br)) +
-  geom_boxplot() +
+ggplot(grouped_pre_data, aes(x = Plot, fill = Species, y = Br)) +
+  geom_boxplot() + labs(title = "Pre-Campaign 2026 Leaf Br", y = "Br (mg/kg dw)") +
   theme_bw()
 
 #much higher in the saltwater plot, especially LITU! 
 #control and fresh are all similar
 #saltwater has a higher range, litu still is wayyyy higher
-cl_box <- ggplot(grouped_data, aes(x = Plot, fill = Species, y = Cl)) +
+ggplot(grouped_pre_data, aes(x = Plot, fill = Species, y = Cl)) +
   geom_boxplot() + theme_bw() + 
-  labs(title = "Vegetation Campaign 2026 Leaf Cl", y = "Cl (mg/kg dw)") 
-cl_box
-ggsave(cl_box, filename = "graphs/Cl box plot (2026-10-02).jpg")
+  labs(title = "Pre-Campaign 2026 Leaf Cl", y = "Cl (mg/kg dw)") 
 
 #not much difference across plots, it's more species-differences
 #litu tends to be higher, fagr tends to be a but lower
-ggplot(grouped_data, aes(x = Plot, fill = Species, y = NO3)) +
-  geom_boxplot() + theme_bw()
+ggplot(grouped_pre_data, aes(x = Plot, fill = Species, y = NO3)) +
+  geom_boxplot() + theme_bw() + labs(title = "Pre-Campaign 2026 Leaf NO3", y = "NO3 (mg/kg dw)")
 
 #a bit of variation again, but mostly contained to litu
 #beech runs mostly similar, acru is higher in freshwater and more in saltwater
 #litu is similar control fresh but much higher salt
-ggplot(grouped_data, aes(x = Plot, fill = Species, y = PO4)) +
-  geom_boxplot() + theme_bw()
+ggplot(grouped_pre_data, aes(x = Plot, fill = Species, y = PO4)) +
+  geom_boxplot() + theme_bw() + labs(title = "Pre-Campaign 2026 Leaf PO4", y = "PO4 (mg/kg dw)")
 
 #nothing of note
-ggplot(grouped_data, aes(x = Plot, fill = Species, y = SO4)) +
-  geom_boxplot() + theme_bw()
+ggplot(grouped_pre_data, aes(x = Plot, fill = Species, y = SO4)) +
+  geom_boxplot() + theme_bw() +  labs(title = "Pre-Campaign 2026 Leaf SO4", y = "SO4 (mg/kg dw)")
 ```
 
-```{r table for mean + sd}
-table_data <- read_csv("Data/Veg Campaign Leaf Iso Mean SD(CSV-Friendly).csv")
+```{r mean + sd, echo = FALSE}
+table_data <- read_csv("Data/Veg Campaign Leaf Iso Mean SD (CSV-Friendly) 202605.csv") |> 
+  head(9)
 
-#i want to bar chart these but it does not work. why?
+# ggplot(table_data, aes(fill = Plot, y = Cl_mean, identity = Species)) +
+#   geom_bar() + theme_bw()
+
+
+# ggplot(table_data, aes(x = Plot, y= Cl_mean, fill = Species)) + 
+#   geom_bar(stat = "identity")
+
+
+long <- table_data %>%
+  pivot_longer(
+    cols = -c(Plot, Species),
+    names_to = c("Analyte", ".value"),
+    names_pattern = "^([A-Za-z0-9]+)_(mean|sd)$"
+  )
+ 
+ 
+ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Stacked Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+
+```
+
+
+#C, N work
+```{r carbon nitrogen}
+
+#dC13 notes: 
+  #rubisco prefers to fix C12 from atmosphere
+  #water stress = close stomata = stop atm exchange = using more C13 
+  #so more water stress = higher C13
+  #reference is a super high # so all are negative, lower magnitude = higher C13
+
+#dN15 notes: 
+  #baseline is atmospheric N15 concentration, not a sample
+  #less straightforward than C13 (?) tells us about N fixation/mutualisms
+  #still a little fuzzy on this
+
+#how to graph?
+  #might help to just see what it looks like with box and whisker and adjust accordingly
+
+ggplot(grouped_pre_data, aes(x = Plot, y = d13C, fill = Species)) +
+  geom_boxplot()  + theme_bw() + 
+  labs(title = "Pre-Campaign 2026 Leaf d13C", y = "d13C") 
+
+ggplot(grouped_pre_data, aes(x = Plot, y = d15N, fill = Species)) + 
+  geom_boxplot()  + theme_bw() + 
+  labs(title = "Pre-Campaign 2026 Leaf d15N", y = "d15N") 
+
+ggplot(grouped_pre_data, aes(x = Plot, y = C_N_ratio, fill = Species))+ 
+  geom_boxplot()  + theme_bw() + 
+  labs(title = "Pre-Campaign 2026 Leaf C/N", y = "C/N") 
+
+
+
+#post
+ggplot(grouped_post_data_partial, aes(x = Plot, y = d13C, fill = Species)) +
+  geom_boxplot()  + theme_bw() + 
+  labs(title = "Post-Campaign 2026 Leaf d13C", y = "d13C") 
+
+ggplot(grouped_post_data_partial, aes(x = Plot, y = d15N, fill = Species)) + 
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Post-Campaign 2026 Leaf d15N", y = "d15N") 
+
+ggplot(grouped_post_data_partial, aes(x = Plot, y = C_N_ratio, fill = Species))+ 
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Post-Campaign 2026 Leaf C/N", y = "C/N") 
+
+
+
+#this is an idea/proof of concept thing, not super tied to any of it
+#differences
+pre_post_CN_diff <- 
+  merge(x = pre_data, y = post_data_partial, by = "Sapflux_ID", suffixes = c("Pre", "Post")) |> 
+  filter(!is.na(d13CPre)) |> 
+  mutate(
+    Plot = PlotPre,
+    Species = SpeciesPre,
+    d13C_percent_change = ((d13CPost - d13CPre) / d13CPre) * 100, # % change = new - old / old *100
+    d15N_percent_change = ((d15NPost - d15NPre) / d15NPre) * 100,
+    CN_percent_change = ((C_N_ratioPost - C_N_ratioPre) / C_N_ratioPre) * 100) |> 
+  select(
+    Sapflux_ID, Plot, Species, 
+    d13CPre, d13CPost, d15NPre, d15NPost, C_N_ratioPre, C_N_ratioPost,
+    d13C_percent_change, d15N_percent_change, CN_percent_change ) |> 
+  group_by(Species, Plot) |> 
+  mutate(
+    d13C_mean_pChange = mean(d13C_percent_change),
+    d15N_mean_pChange = mean(d15N_percent_change),
+    CN_mean_pChange = mean(CN_percent_change)
+  )
+
+
+
+#seemed like a possibility for looking at, but not sure how to interpret
+ggplot(pre_post_CN_diff, aes(x = Plot, y = d13C_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign d13C % Change", y = "% Change d13C") 
+
+ggplot(pre_post_CN_diff, aes(x = Plot, y = d15N_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign d15N % Change", y = "% Change d15N") 
+
+ggplot(pre_post_CN_diff, aes(x = Plot, y = CN_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign C/N % Change", y = "% Change C/N") 
+
+
+
+# #I AM NOT CERTAN THAT I DID THIS CORRECT PLEASE TAKE WITH A GRAIN OF SALT
+# long_CNDiff <- pre_post_CN_diff %>%
+#   ungroup() |> 
+#   pivot_longer(
+#     cols = -c(Plot, Species),
+#     names_to = c("Analyte", ".value"),
+#     names_pattern = "^([A-Za-z0-9]+)_(percent_change|mean_pChange)$"
+#   ) |> 
+#   filter(!is.na(Analyte))
+#  
+# #not what i want but leaving as ref
+# ggplot(long_CNDiff, aes(x = Species, y = mean_pChange, fill = Analyte)) +
+#   geom_col(position = "stack") +
+#   facet_wrap(~ Plot) +
+#   labs(
+#     title = "Stacked Analyte Concentrations by Species",
+#     x = "Species",
+#     y = "Mean percent change",
+#     fill = "Analyte"
+#   ) +
+#   theme_minimal()
+
+
+#take2
+#i think that's what i want???
+#also not 100000% sure how to interpret. but it's something!
+ggplot(pre_post_CN_diff, aes(x = Species, y = d13C_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean d13C % Change", y = "Mean % Change d13C") +
+  geom_hline(yintercept = 0)
+
+?geom_hline()
+
+ggplot(pre_post_CN_diff, aes(x = Species, y = d15N_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean d15N % Change", y = "Mean % Change d15N") +
+  geom_hline(yintercept = 0)
+
+ggplot(pre_post_CN_diff, aes(x = Species, y = CN_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean C/N % Change", y = "Mean % Change C/N") +
+  geom_hline(yintercept = 0)
+
 
 ```
