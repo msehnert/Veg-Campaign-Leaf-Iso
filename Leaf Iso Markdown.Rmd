@@ -13,7 +13,8 @@ Goals:
 summarize all by species and plot
 
 **CURRENT QUESTIONS: **
-is my % change idea at the bottom helpful at all?
+waiting on post-campaign data still
+
 
 ```{r libararies, include = FALSE}
 #general (from photosynthesis project, some might be unused)
@@ -120,7 +121,8 @@ long <- table_data %>%
     cols = -c(Plot, Species),
     names_to = c("Analyte", ".value"),
     names_pattern = "^([A-Za-z0-9]+)_(mean|sd)$"
-  )
+  ) |> 
+  filter(!is.na(Analyte))
  
  
 ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
@@ -128,9 +130,88 @@ ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
   facet_wrap(~ Plot) +
   scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
   labs(
-    title = "Stacked Analyte Concentrations by Species",
+    title = "Pre-Campaign Cumulative Analyte Concentrations by Species",
     x = "Species",
-    y = "Mean concentration",
+    y = "Mean concentration (mg/kg dw)",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+
+
+
+#breaking up the graph!
+step1 <- long |> 
+  filter(Analyte == "Br")
+
+ggplot(step1, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Pre-Campaign Cumulative Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration (mg/kg dw)",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+
+step2 <- long |> 
+  filter(Analyte == "Br" | Analyte == "Cl")
+  
+
+ggplot(step2, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Pre-Campaign Cumulative Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration (mg/kg dw)",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+
+
+step3 <- long |> 
+  filter(Analyte == "Br" | Analyte == "Cl" | Analyte == "NO3")
+
+ggplot(step3, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Pre-Campaign Cumulative Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration (mg/kg dw)",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+
+
+step4 <- long |> 
+  filter(Analyte != "SO4")
+
+ggplot(step4, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Pre-Campaign Cumulative Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration (mg/kg dw)",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+
+
+ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Pre-Campaign Cumulative Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration (mg/kg dw)",
     fill = "Analyte"
   ) +
   theme_minimal() 
