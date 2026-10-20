@@ -35,6 +35,8 @@ pre_data <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202605 - forR(SampleL
 post_data_partial <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202607_ForR_INCOMPLETE.csv") |> 
   head(54)
 
+post_data <-  read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202607_ForR.csv") |> 
+  head(54)
 
 #get mean and sd for each isotope grouped by species and plot
 grouped_pre_data <- pre_data |>
@@ -60,6 +62,23 @@ grouped_post_data_partial <- post_data_partial |>
   mutate(
     d13C_mean = mean(d13C), 
     d15N_mean = mean(d15N))
+
+grouped_post_data <- post_data |> 
+  group_by(Species, Plot) |>
+  filter(!is.na(Br)) |> 
+  mutate(
+    d13C_mean = mean(d13C), 
+    d15N_mean = mean(d15N),
+    Br_mean = mean(Br), 
+    Cl_mean = mean(Cl),
+    NO3_mean = mean(NO3),
+    PO4_mean = mean(PO4),
+    SO4_mean = mean(SO4),
+    Br_sd = sd(Br), 
+    Cl_sd = sd(Cl),
+    NO3_sd = sd(NO3),
+    PO4_sd = sd(PO4),
+    SO4_sd = sd(SO4))
  
 
 ```
@@ -105,7 +124,7 @@ ggplot(grouped_pre_data, aes(x = Plot, fill = Species, y = SO4)) +
 ```
 
 ```{r mean + sd, echo = FALSE}
-table_data <- read_csv("Data/Veg Campaign Leaf Iso Mean SD (CSV-Friendly) 202605.csv") |> 
+table_data_pre <- read_csv("Data/Veg Campaign Leaf Iso Mean SD (CSV-Friendly) 202605.csv") |> 
   head(9)
 
 # ggplot(table_data, aes(fill = Plot, y = Cl_mean, identity = Species)) +
@@ -116,7 +135,7 @@ table_data <- read_csv("Data/Veg Campaign Leaf Iso Mean SD (CSV-Friendly) 202605
 #   geom_bar(stat = "identity")
 
 
-long <- table_data %>%
+long_pre <- table_data_pre %>%
   pivot_longer(
     cols = -c(Plot, Species),
     names_to = c("Analyte", ".value"),
@@ -125,7 +144,7 @@ long <- table_data %>%
   filter(!is.na(Analyte))
  
  
-ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
+ggplot(long_pre, aes(x = Species, y = mean, fill = Analyte)) +
   geom_col(position = "stack") +
   facet_wrap(~ Plot) +
   scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
@@ -140,7 +159,7 @@ ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
 
 
 #breaking up the graph!
-step1 <- long |> 
+step1 <- long_pre |> 
   filter(Analyte == "Br")
 
 ggplot(step1, aes(x = Species, y = mean, fill = Analyte)) +
@@ -155,7 +174,7 @@ ggplot(step1, aes(x = Species, y = mean, fill = Analyte)) +
   ) +
   theme_minimal() 
 
-step2 <- long |> 
+step2 <- long_pre |> 
   filter(Analyte == "Br" | Analyte == "Cl")
   
 
@@ -172,7 +191,7 @@ ggplot(step2, aes(x = Species, y = mean, fill = Analyte)) +
   theme_minimal() 
 
 
-step3 <- long |> 
+step3 <- long_pre |> 
   filter(Analyte == "Br" | Analyte == "Cl" | Analyte == "NO3")
 
 ggplot(step3, aes(x = Species, y = mean, fill = Analyte)) +
@@ -188,7 +207,7 @@ ggplot(step3, aes(x = Species, y = mean, fill = Analyte)) +
   theme_minimal() 
 
 
-step4 <- long |> 
+step4 <- long_pre |> 
   filter(Analyte != "SO4")
 
 ggplot(step4, aes(x = Species, y = mean, fill = Analyte)) +
@@ -204,7 +223,7 @@ ggplot(step4, aes(x = Species, y = mean, fill = Analyte)) +
   theme_minimal() 
 
 
-ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
+ggplot(long_pre, aes(x = Species, y = mean, fill = Analyte)) +
   geom_col(position = "stack") +
   facet_wrap(~ Plot) +
   scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
@@ -218,6 +237,76 @@ ggplot(long, aes(x = Species, y = mean, fill = Analyte)) +
 
 ```
 
+*Post Campaign*
+```{r summarize ions: box plot, echo=FALSE}
+
+####THIS IS POST-CAMPAIGN DATA
+
+
+#idea: box and whisker plots? (show range, which would be useful to know)
+#can i cluster by plot but show by species? (yes! fill = does this)
+
+#could be fun to color these fun and not with plots
+
+#all appear mostly similar
+ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = Br)) +
+  geom_boxplot() + labs(title = "Post-Campaign 2026 Leaf Br", y = "Br (mg/kg dw)") +
+  theme_bw()
+
+#much higher in the saltwater plot, especially LITU! 
+#control and fresh are all similar
+#saltwater is WAYYYYYY higher for LITU (like 1000 mg/kg higher)
+ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = Cl)) +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Post-Campaign 2026 Leaf Cl", y = "Cl (mg/kg dw)") 
+
+#not much difference across plots, it's more species-differences
+#litu tends to be higher, fagr tends to be a but lower
+ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = NO3)) +
+  geom_boxplot() + theme_bw() + labs(title = "Post-Campaign 2026 Leaf NO3", y = "NO3 (mg/kg dw)")
+
+
+ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = PO4)) +
+  geom_boxplot() + theme_bw() + labs(title = "Post-Campaign 2026 Leaf PO4", y = "PO4 (mg/kg dw)")
+
+#treatment effect on LITU, not really on the others
+ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = SO4)) +
+  geom_boxplot() + theme_bw() +  labs(title = "Post-Campaign 2026 Leaf SO4", y = "SO4 (mg/kg dw)")
+
+```
+```{r post stack echo= false} 
+table_data_post <- read_csv(DO THIS MAGGIE) |> 
+  head(9)
+
+# ggplot(table_data, aes(fill = Plot, y = Cl_mean, identity = Species)) +
+#   geom_bar() + theme_bw()
+
+
+# ggplot(table_data, aes(x = Plot, y= Cl_mean, fill = Species)) + 
+#   geom_bar(stat = "identity")
+
+
+long_post <- table_data_post %>%
+  pivot_longer(
+    cols = -c(Plot, Species),
+    names_to = c("Analyte", ".value"),
+    names_pattern = "^([A-Za-z0-9]+)_(mean|sd)$"
+  ) |> 
+  filter(!is.na(Analyte))
+ 
+ 
+ggplot(long_post, aes(x = Species, y = mean, fill = Analyte)) +
+  geom_col(position = "stack") +
+  facet_wrap(~ Plot) +
+  scale_fill_brewer(palette = "Set1") + #not my fave color pallette but not ugly yellow so
+  labs(
+    title = "Post-Campaign Cumulative Analyte Concentrations by Species",
+    x = "Species",
+    y = "Mean concentration (mg/kg dw)",
+    fill = "Analyte"
+  ) +
+  theme_minimal() 
+```
 
 #C, N work
 ```{r carbon nitrogen}
