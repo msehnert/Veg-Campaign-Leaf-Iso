@@ -13,7 +13,7 @@ Goals:
 summarize all by species and plot
 
 **CURRENT QUESTIONS: **
-waiting on post-campaign data still
+its go time!!
 
 
 ```{r libararies, include = FALSE}
@@ -36,7 +36,8 @@ post_data_partial <- read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202607_ForR_
   head(54)
 
 post_data <-  read_csv("Data/TEMPEST_LeafSampleList_ISO_Ions_202607_ForR.csv") |> 
-  head(54)
+  head(54) |> 
+  select(!contains("..."))
 
 #get mean and sd for each isotope grouped by species and plot
 grouped_pre_data <- pre_data |>
@@ -65,7 +66,7 @@ grouped_post_data_partial <- post_data_partial |>
 
 grouped_post_data <- post_data |> 
   group_by(Species, Plot) |>
-  filter(!is.na(Br)) |> 
+  filter(!is.na(Br))|> 
   mutate(
     d13C_mean = mean(d13C), 
     d15N_mean = mean(d15N),
@@ -83,7 +84,7 @@ grouped_post_data <- post_data |>
 
 ```
 
-*Pre-Campaign*
+*Pre-Campaign Iso*
 
 ```{r summarize ions: box plot, echo=FALSE}
 
@@ -237,7 +238,7 @@ ggplot(long_pre, aes(x = Species, y = mean, fill = Analyte)) +
 
 ```
 
-*Post Campaign*
+*Post Campaign Iso*
 ```{r summarize ions: box plot, echo=FALSE}
 
 ####THIS IS POST-CAMPAIGN DATA
@@ -274,9 +275,10 @@ ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = SO4)) +
   geom_boxplot() + theme_bw() +  labs(title = "Post-Campaign 2026 Leaf SO4", y = "SO4 (mg/kg dw)")
 
 ```
+
 ```{r post stack echo= false} 
-table_data_post <- read_csv(DO THIS MAGGIE) |> 
-  head(9)
+table_data_post <- read_csv("Data/Veg Campaign Leaf Iso Mean SD 202607.csv") |> 
+   head(9)
 
 # ggplot(table_data, aes(fill = Plot, y = Cl_mean, identity = Species)) +
 #   geom_bar() + theme_bw()
@@ -286,13 +288,14 @@ table_data_post <- read_csv(DO THIS MAGGIE) |>
 #   geom_bar(stat = "identity")
 
 
-long_post <- table_data_post %>%
+long_post <- grouped_post_data %>%
+  select(!c(d13C_mean, d15N_mean)) |> 
   pivot_longer(
     cols = -c(Plot, Species),
     names_to = c("Analyte", ".value"),
-    names_pattern = "^([A-Za-z0-9]+)_(mean|sd)$"
-  ) |> 
+    names_pattern = "^([A-Za-z0-9]+)_(mean|sd)$") |> 
   filter(!is.na(Analyte))
+  
  
  
 ggplot(long_post, aes(x = Species, y = mean, fill = Analyte)) +
@@ -308,6 +311,97 @@ ggplot(long_post, aes(x = Species, y = mean, fill = Analyte)) +
   theme_minimal() 
 ```
 
+*Compare Campaign Iso*
+```{r pre v post echo = false}
+pre_post_iso_diff <- 
+  merge(x = pre_data, y = post_data, by = "Sapflux_ID", suffixes = c("Pre", "Post")) |> 
+  filter(!is.na(BrPre)) |> 
+  mutate(
+    Plot = PlotPre,
+    Species = SpeciesPre,
+    Br_percent_change = ((BrPost - BrPre) / BrPre) * 100, # NOTE SOME OF THESE PRE = 0 SO THERE ARE /0 ERRORS
+    Cl_percent_change = ((ClPost - ClPre) / ClPre) * 100,
+    NO3_percent_change = ((NO3Post - NO3Pre) / NO3Pre) * 100,
+    PO4_percent_change = ((PO4Post - PO4Pre) / PO4Pre) * 100, 
+    SO4_percent_change = ((SO4Post - SO4Pre) / SO4Pre) * 100) |> 
+  select(
+    Sapflux_ID, Plot, Species, 
+    BrPre, BrPost, ClPre, ClPost, NO3Pre, NO3Post, PO4Pre, PO4Post, SO4Pre, SO4Post,
+    Br_percent_change, Cl_percent_change, NO3_percent_change, PO4_percent_change, SO4_percent_change) |> 
+  group_by(Species, Plot) |> 
+  mutate(
+    Br_mean_pChange = mean(Br_percent_change),
+    Cl_mean_pChange = mean(Cl_percent_change),
+    NO3_mean_pChange = mean(NO3_percent_change),
+    PO4_mean_pChange = mean(PO4_percent_change),
+    SO4_mean_pChange = mean(SO4_percent_change)
+  )
+
+
+#box and whiskers to visualize per-species
+ggplot(pre_post_iso_diff, aes(x = Plot, y = Br_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign Br % Change", y = "% Change Br") 
+
+ggplot(pre_post_iso_diff, aes(x = Plot, y = Cl_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign Cl % Change", y = "% Change Cl") 
+
+ggplot(pre_post_iso_diff, aes(x = Plot, y = NO3_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign NO3 % Change", y = "% Change NO3") 
+
+ggplot(pre_post_iso_diff, aes(x = Plot, y = PO4_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign PO4 % Change", y = "% Change PO4") 
+
+ggplot(pre_post_iso_diff, aes(x = Plot, y = SO4_percent_change, fill = Species)) +
+  geom_hline(yintercept = 0, color = "darkgrey") +
+  geom_boxplot() + theme_bw() + 
+  labs(title = "Veg Campaign SO4 % Change", y = "% Change SO4") 
+
+
+
+
+#bar charts
+ggplot(pre_post_iso_diff, aes(x = Species, y = Br_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean Br % Change NEED TO FILTER /0 ERROR", y = "Mean % Change Br") +
+  geom_hline(yintercept = 0)
+#THIS ONE NEEDS TO FILTER OUT THE INF ERROR !!!
+
+ggplot(pre_post_iso_diff, aes(x = Species, y = Cl_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean Cl% Change", y = "Mean % Change Cl") +
+  geom_hline(yintercept = 0)
+
+ggplot(pre_post_iso_diff, aes(x = Species, y = NO3_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean NO3% Change", y = "Mean % Change NO3") +
+  geom_hline(yintercept = 0)
+
+ggplot(pre_post_iso_diff, aes(x = Species, y = PO4_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean PO4% Change", y = "Mean % Change PO4") +
+  geom_hline(yintercept = 0)
+
+ggplot(pre_post_iso_diff, aes(x = Species, y = SO4_mean_pChange, fill = Species)) + 
+  geom_col(position = "identity") + 
+  facet_wrap(~Plot) + theme_bw() + 
+  labs(title = "Veg Campaign Mean SO4% Change", y = "Mean % Change SO4") +
+  geom_hline(yintercept = 0)
+
+```
+
+*Carbon/Nitrogen*
 #C, N work
 ```{r carbon nitrogen}
 
