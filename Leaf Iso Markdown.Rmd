@@ -86,7 +86,7 @@ grouped_post_data <- post_data |>
 
 *Pre-Campaign Iso*
 
-```{r summarize ions: box plot, echo=FALSE}
+```{r summarize ions pre: box plot, echo=FALSE}
 
 ####THIS IS PRE-CAMPAIGN DATA
 
@@ -239,7 +239,7 @@ ggplot(long_pre, aes(x = Species, y = mean, fill = Analyte)) +
 ```
 
 *Post Campaign Iso*
-```{r summarize ions: box plot, echo=FALSE}
+```{r summarize ions post: box plot, echo=FALSE}
 
 ####THIS IS POST-CAMPAIGN DATA
 
@@ -276,7 +276,7 @@ ggplot(grouped_post_data, aes(x = Plot, fill = Species, y = SO4)) +
 
 ```
 
-```{r post stack echo= false} 
+```{r post stack, echo = FALSE} 
 table_data_post <- read_csv("Data/Veg Campaign Leaf Iso Mean SD 202607.csv") |> 
    head(9)
 
@@ -312,7 +312,7 @@ ggplot(long_post, aes(x = Species, y = mean, fill = Analyte)) +
 ```
 
 *Compare Campaign Iso*
-```{r pre v post echo = false}
+```{r pre v post, echo = FALSE}
 pre_post_iso_diff <- 
   merge(x = pre_data, y = post_data, by = "Sapflux_ID", suffixes = c("Pre", "Post")) |> 
   filter(!is.na(BrPre)) |> 
@@ -342,7 +342,7 @@ pre_post_iso_diff <-
 ggplot(pre_post_iso_diff, aes(x = Plot, y = Br_percent_change, fill = Species)) +
   geom_hline(yintercept = 0, color = "darkgrey") +
   geom_boxplot() + theme_bw() + 
-  labs(title = "Veg Campaign Br % Change", y = "% Change Br") 
+  labs(title = "Veg Campaign Br % Change", y = "% Change Br", caption = "Note: LITU Control initial Br = 0, no # for % change") 
 
 ggplot(pre_post_iso_diff, aes(x = Plot, y = Cl_percent_change, fill = Species)) +
   geom_hline(yintercept = 0, color = "darkgrey") +
@@ -368,10 +368,10 @@ ggplot(pre_post_iso_diff, aes(x = Plot, y = SO4_percent_change, fill = Species))
 
 
 #bar charts
-ggplot(pre_post_iso_diff, aes(x = Species, y = Br_mean_pChange, fill = Species)) + 
+ggplot(pre_post_iso_diff |> filter_out((Species == "LITU" & Plot == "Control")), aes(x = Species, y = Br_mean_pChange, fill = Species)) + 
   geom_col(position = "identity") + 
   facet_wrap(~Plot) + theme_bw() + 
-  labs(title = "Veg Campaign Mean Br % Change NEED TO FILTER /0 ERROR", y = "Mean % Change Br") +
+  labs(title = "Veg Campaign Mean Br % Change", y = "Mean % Change Br", caption = "Note: All LITU control initial Br = 0, so % change has been removed from this graph.") +
   geom_hline(yintercept = 0)
 #THIS ONE NEEDS TO FILTER OUT THE INF ERROR !!!
 
@@ -403,7 +403,7 @@ ggplot(pre_post_iso_diff, aes(x = Species, y = SO4_mean_pChange, fill = Species)
 
 *Carbon/Nitrogen*
 #C, N work
-```{r carbon nitrogen}
+```{r carbon nitrogen, echo = FALSE}
 
 #dC13 notes: 
   #rubisco prefers to fix C12 from atmosphere
